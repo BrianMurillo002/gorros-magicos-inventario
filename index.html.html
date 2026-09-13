@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gorros Mágicos — Control de insumos</title>
+<style>
+  :root{
+    --night-deep:#1B1330;
+    --night-mid:#2E2150;
+    --gold:#E8B93B;
+    --gold-soft:#F3D98B;
+    --paper:#FBF7FF;
+    --paper-line:#E9E1F5;
+    --ink:#251A3D;
+    --ink-muted:#786C93;
+    --entrada:#2F7F62;
+    --entrada-bg:#DCEFE6;
+    --salida:#9C2B4E;
+    --salida-bg:#F5DCE3;
+    --font-mono: ui-monospace, "SFMono-Regular", Consolas, "Courier New", monospace;
+    --font-sans: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(1.5px 1.5px at 12% 18%, rgba(255,255,255,0.85) 50%, transparent 51%),
+      radial-gradient(1px 1px at 82% 12%, rgba(255,255,255,0.6) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 65% 28%, rgba(232,185,59,0.7) 50%, transparent 51%),
+      radial-gradient(1px 1px at 30% 45%, rgba(255,255,255,0.6) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 90% 55%, rgba(255,255,255,0.55) 50%, transparent 51%),
+      radial-gradient(1px 1px at 8% 65%, rgba(232,185,59,0.6) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 50% 80%, rgba(255,255,255,0.5) 50%, transparent 51%),
+      radial-gradient(1px 1px at 75% 90%, rgba(255,255,255,0.6) 50%, transparent 51%),
+      linear-gradient(160deg, var(--night-deep), var(--night-mid));
+    font-family:var(--font-sans);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .tag{
+    width:100%;
+    max-width:440px;
+    background:var(--paper);
+    border-radius:10px;
+    box-shadow:0 20px 40px rgba(10,5,25,0.45), 0 0 0 1px rgba(232,185,59,0.35);
+    position:relative;
+    overflow:hidden;
+  }
+  .punch{
+    width:22px;height:22px;
+    border-radius:50%;
+    background:var(--night-mid);
+    box-shadow:inset 0 2px 4px rgba(0,0,0,0.4), 0 0 0 2px rgba(232,185,59,0.5);
+    position:absolute;
+    top:14px; left:50%;
+    transform:translateX(-50%);
+  }
+  header.head{
+    padding:44px 26px 20px;
+    text-align:center;
+    position:relative;
+  }
+  .sparkle{
+    position:absolute;
+    color:var(--gold);
+    opacity:0.8;
+  }
+  .sparkle-1{top:38px; left:16%; font-size:16px; transform:rotate(-10deg);}
+  .sparkle-2{top:52px; right:14%; font-size:12px; transform:rotate(15deg);}
+  .sparkle-3{top:78px; right:26%; font-size:9px; transform:rotate(5deg);}
+  .eyebrow-stamp{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    color:var(--salida);
+    border:1.5px solid var(--salida);
+    padding:3px 10px;
+    transform:rotate(-2deg);
+    border-radius:2px;
+  }
+  h1{
+    font-family:Georgia, "Times New Roman", serif;
+    font-size:30px;
+    font-weight:700;
+    margin:14px 0 4px;
+    letter-spacing:0.01em;
+    background:linear-gradient(135deg, #6B4F9E, var(--gold) 55%, #6B4F9E);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .subtitle{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--ink-muted);
+    margin:0;
+  }
+  .perf{
+    border:none;
+    border-top:2px dashed var(--paper-line);
+    margin:0;
+  }
+  section{padding:22px 26px;}
+  .tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .tab{
+    flex:1;
+    padding:11px 0;
+    text-align:center;
+    font-family:var(--font-mono);
+    font-size:14px;
+    letter-spacing:0.03em;
+    border:2px solid var(--ink);
+    border-radius:3px;
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .tab:active{transform:scale(0.97);}
+  .tab.active.entrada{background:var(--entrada);border-color:var(--entrada);color:var(--paper);}
+  .tab.active.salida{background:var(--salida);border-color:var(--salida);color:var(--paper);}
+
+  label{
+    display:block;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-muted);
+    margin:14px 0 5px;
+  }
+  select, input[type="text"], input[type="number"]{
+    width:100%;
+    padding:10px 11px;
+    font-family:var(--font-sans);
+    font-size:15px;
+    border:1.5px solid var(--paper-line);
+    border-radius:4px;
+    background:#fff;
+    color:var(--ink);
+  }
+  select:focus, input:focus{
+    outline:2px solid var(--ink);
+    outline-offset:1px;
+  }
+  select:disabled{background:#F1EEE4;color:var(--ink-muted);}
+  .submit-btn{
+    width:100%;
+    margin-top:20px;
+    padding:13px 0;
+    font-family:var(--font-mono);
+    font-size:15px;
+    letter-spacing:0.03em;
+    border:none;
+    border-radius:4px;
+    color:var(--paper);
+    cursor:pointer;
+  }
+  .submit-btn.entrada{background:var(--entrada);}
+  .submit-btn.salida{background:var(--salida);}
+  .submit-btn:disabled{opacity:0.55;cursor:not-allowed;}
+
+  .msg{
+    margin-top:16px;
+    padding:12px 14px;
+    border-radius:4px;
+    font-size:14px;
+    line-height:1.45;
+    border-left:4px solid;
+  }
+  .msg.ok{background:var(--entrada-bg);border-color:var(--entrada);color:#25402F;}
+  .msg.error{background:var(--salida-bg);border-color:var(--salida);color:#5C2015;}
+
+  h2.section-title{
+    font-family:var(--font-mono);
+    font-size:13px;
+    letter-spacing:0.06em;
+    color:var(--ink-muted);
+    margin:0 0 12px;
+  }
+  .insumo-group{margin-bottom:16px;}
+  .insumo-group:last-child{margin-bottom:0;}
+  .insumo-label{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .stock-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding:6px 0;
+    border-bottom:1px solid var(--paper-line);
+    font-family:var(--font-mono);
+    font-size:13.5px;
+  }
+  .stock-row:last-child{border-bottom:none;}
+  .stock-row .qty{font-weight:600;}
+  .stock-row .qty.zero{color:var(--salida);}
+  .stock-row .tag-agotado{
+    font-size:10px;
+    color:var(--salida);
+    margin-left:8px;
+    letter-spacing:0.04em;
+  }
+
+  .history-item{
+    padding:10px 0;
+    border-bottom:1px solid var(--paper-line);
+    font-size:13.5px;
+  }
+  .history-item:last-child{border-bottom:none;}
+  .history-top{
+    display:flex;
+    justify-content:space-between;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-muted);
+  }
+  .history-top .type-entrada{color:var(--entrada);font-weight:700;}
+  .history-top .type-salida{color:var(--salida);font-weight:700;}
+  .history-main{margin-top:3px;}
+  .history-sub{color:var(--ink-muted);font-size:12.5px;margin-top:2px;}
+  .empty-note{
+    font-size:13px;
+    color:var(--ink-muted);
+    font-style:italic;
+  }
+
+  .setup-block{
+    border:1.5px dashed var(--paper-line);
+    border-radius:5px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .setup-block-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .setup-block-head input[type="text"]{
+    font-family:var(--font-mono);
+    font-weight:700;
+    font-size:14px;
+    border:none;
+    border-bottom:1.5px solid var(--ink);
+    border-radius:0;
+    padding:4px 2px;
+    background:transparent;
+  }
+  .remove-insumo{
+    background:none;border:none;color:var(--salida);
+    font-family:var(--font-mono);font-size:12px;cursor:pointer;
+    text-decoration:underline;
+  }
+  .setup-row{display:flex;gap:8px;margin-bottom:8px;}
+  .setup-row input[type="text"]{flex:2;}
+  .setup-row input[type="number"]{flex:1;}
+  .setup-row button{
+    border:1.5px solid var(--ink);
+    background:transparent;
+    color:var(--ink);
+    border-radius:4px;
+    font-family:var(--font-mono);
+    font-size:16px;
+    width:34px;
+    cursor:pointer;
+  }
+  .link-btn{
+    background:none;border:none;
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--ink-muted);
+    text-decoration:underline;
+    cursor:pointer;
+    padding:0;
+  }
+  .footer-note{
+    text-align:center;
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--ink-muted);
+    padding:16px 26px 26px;
+  }
+  .loading{padding:40px 26px;text-align:center;font-family:var(--font-mono);color:var(--ink-muted);}
+</style>
+</head>
+<body>
+
+<div class="tag">
+  <div class="punch"></div>
+  <header class="head">
+    <div class="sparkle sparkle-1">✦</div>
+    <div class="sparkle sparkle-2">✧</div>
+    <div class="sparkle sparkle-3">✦</div>
+    <h1>Gorros Mágicos</h1>
+    <p class="subtitle">Registro de movimientos de insumos</p>
+  </header>
+
+  <hr class="perf">
+
+  <div id="app"><div class="loading">Cargando ficha…</div></div>
+
+  <p class="footer-note">Cada movimiento que registres aquí se guarda directamente en la hoja de cálculo conectada.</p>
+</div>
+
+<script>
+// ============================================================
+// Pega aquí la URL de tu Apps Script (paso 5 de la guía),
+// debe terminar en /exec
+// ============================================================
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbwRMRgKZVATmAZWS8J0NHlsF3ylKmsv4DivhVS2KyiwD-PmTuCxp5be5q7wcZo49NDJZA/exec';
+
+
+
+// data shape: { insumos: { "Nombre insumo": { "Color": cantidad, ... }, ... }, movimientos: [...] }
+let data = null;
+let movementType = 'entrada';
+
+async function loadData(){
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="loading">Cargando datos de la hoja…</div>';
+
+  if(!SHEET_API_URL || SHEET_API_URL.indexOf('PEGA_AQUI') === 0){
+    app.innerHTML = `<section><div class="msg error">Falta configurar la URL de Google Sheets en el código (constante SHEET_API_URL).</div></section>`;
+    return;
+  }
+
+  try{
+    const res = await fetch(SHEET_API_URL);
+    const json = await res.json();
+    if(!json.ok) throw new Error(json.error || 'Respuesta inválida');
+    data = { insumos: json.insumos || {}, movimientos: json.movimientos || [] };
+  }catch(e){
+    app.innerHTML = `
+      <section>
+        <div class="msg error">No se pudo conectar con la hoja de cálculo. Verifica tu conexión o la URL configurada.</div>
+        <button type="button" class="link-btn" id="retryBtn" style="margin-top:10px;">Reintentar</button>
+      </section>
+    `;
+    document.getElementById('retryBtn').onclick = loadData;
+    return;
+  }
+  render();
+}
+
+function hasAnyInsumo(){
+  return data && data.insumos && Object.keys(data.insumos).length > 0;
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(!hasAnyInsumo()){
+    app.innerHTML = `
+      <section>
+        <p class="empty-note">Todavía no hay insumos en la pestaña "Stock" de tu hoja de cálculo. Agrega ahí filas con Insumo, Color y Cantidad, y luego actualiza.</p>
+        <button type="button" class="link-btn" id="retryBtn">Actualizar</button>
+      </section>
+    `;
+    document.getElementById('retryBtn').onclick = loadData;
+    return;
+  }
+  renderForm(app);
+}
+
+// ---------- FORM ----------
+function renderForm(app){
+  const insumos = Object.keys(data.insumos);
+  const currentInsumo = insumos[0];
+
+  app.innerHTML = `
+    <section>
+      <div class="tabs">
+        <button type="button" class="tab entrada ${movementType==='entrada'?'active':''}" data-type="entrada">↓ ENTRADA</button>
+        <button type="button" class="tab salida ${movementType==='salida'?'active':''}" data-type="salida">↑ SALIDA</button>
+      </div>
+
+      <label for="insumoSelect">Insumo</label>
+      <select id="insumoSelect">
+        ${insumos.map(i => `<option value="${i}">${i}</option>`).join('')}
+      </select>
+
+      <label for="colorSelect">Color</label>
+      <select id="colorSelect"></select>
+
+      <label for="qtyInput">Cantidad</label>
+      <input type="number" id="qtyInput" min="1" placeholder="Ej. 5">
+
+      <label for="destinoInput">Destino</label>
+      <input type="text" id="destinoInput" placeholder="Ej. Bodega Norte, línea 2, cliente...">
+
+      <label for="responsableInput">Responsable</label>
+      <input type="text" id="responsableInput" placeholder="Nombre de quien registra">
+
+      <button type="button" class="submit-btn ${movementType}" id="submitBtn">
+        ${movementType === 'entrada' ? 'Registrar entrada' : 'Registrar salida'}
+      </button>
+
+      <div id="feedback"></div>
+    </section>
+
+    <hr class="perf">
+
+    <section>
+      <h2 class="section-title">HISTORIAL DE MOVIMIENTOS</h2>
+      <div id="historyList">
+        ${data.movimientos.length === 0 ? '<p class="empty-note">Aún no se han registrado movimientos.</p>' :
+          data.movimientos.slice().reverse().map(m => `
+            <div class="history-item">
+              <div class="history-top">
+                <span class="type-${m.tipo}">${m.tipo === 'entrada' ? 'ENTRADA' : 'SALIDA'}</span>
+                <span>${new Date(m.fecha).toLocaleString('es-CO', {dateStyle:'short', timeStyle:'short'})}</span>
+              </div>
+              <div class="history-main">${m.cantidad} × ${m.insumo} — ${m.color}${m.destino ? ' → ' + m.destino : ''}</div>
+              ${m.responsable ? `<div class="history-sub">Responsable: ${m.responsable}</div>` : ''}
+            </div>
+          `).join('')
+        }
+      </div>
+      <button type="button" class="link-btn" id="refreshBtn" style="margin-top:14px;">🔄 Actualizar datos</button>
+    </section>
+  `;
+
+  app.querySelectorAll('.tab').forEach(btn => {
+    btn.onclick = () => { movementType = btn.dataset.type; renderForm(app); };
+  });
+
+  const insumoSelect = document.getElementById('insumoSelect');
+  const colorSelect = document.getElementById('colorSelect');
+
+  function populateColors(){
+    const insumo = insumoSelect.value;
+    const colors = Object.keys(data.insumos[insumo] || {});
+    colorSelect.innerHTML = colors.map(c => `<option value="${c}">${c}</option>`).join('');
+  }
+  populateColors();
+  insumoSelect.onchange = populateColors;
+
+  document.getElementById('submitBtn').onclick = handleSubmit;
+  document.getElementById('refreshBtn').onclick = loadData;
+}
+
+async function handleSubmit(){
+  const insumo = document.getElementById('insumoSelect').value;
+  const color = document.getElementById('colorSelect').value;
+  const qty = parseInt(document.getElementById('qtyInput').value, 10);
+  const destino = document.getElementById('destinoInput').value.trim();
+  const responsable = document.getElementById('responsableInput').value.trim();
+  const feedback = document.getElementById('feedback');
+  const submitBtn = document.getElementById('submitBtn');
+  feedback.innerHTML = '';
+
+  if(!qty || qty <= 0){
+    feedback.innerHTML = `<div class="msg error">Ingresa una cantidad válida, mayor que cero.</div>`;
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Enviando...';
+
+  try{
+    // 'text/plain' evita que el navegador dispare una solicitud de
+    // verificación previa (preflight) que Apps Script no maneja bien.
+    const res = await fetch(SHEET_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ tipo: movementType, insumo, color, cantidad: qty, destino, responsable })
+    });
+    const json = await res.json();
+
+    if(!json.ok){
+      feedback.innerHTML = `<div class="msg error">${json.error}</div>`;
+      submitBtn.disabled = false;
+      submitBtn.textContent = movementType === 'entrada' ? 'Registrar entrada' : 'Registrar salida';
+      return;
+    }
+
+    feedback.innerHTML = `<div class="msg ok">${movementType === 'entrada' ? 'Entrada' : 'Salida'} registrada: ${qty} × ${insumo} (${color})${destino ? ' → ' + destino : ''}.</div>`;
+    await loadData();
+
+  }catch(e){
+    feedback.innerHTML = `<div class="msg error">No se pudo enviar el movimiento. Revisa tu conexión e intenta de nuevo.</div>`;
+    submitBtn.disabled = false;
+    submitBtn.textContent = movementType === 'entrada' ? 'Registrar entrada' : 'Registrar salida';
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
